@@ -19,102 +19,59 @@ function writeUsers(users) {
     writeFileSync(filePath, JSON.stringify(users, null, 2));
 }
 
- const getAllUsers = (req, res) => {
-    try{const users = readUsers();
-    res.json(users);
-    } catch {
-     res.status(500).json({ error: 'Failed to create user' });
-    } 
+const getAllUsers = (req, res) => {
+  const users = readUsers();
+  res.json(users);
 };
 
+
  const getUserById = (req, res) => {
-     try{const users = readUsers();
-    res.json(users);
-    } catch {
-     res.status(404).json({ error: 'Failed to create user' });
-    } 
-    res.send('Get One user by ID')
-}
+  const id = Number(req.params.userID);
+  const users = users.find(user => user.id === id);
+  if (!user) {
+    return res.status(404).send('User not found');
+  }
+  res.json(user);
+};
 
- const createUser = (req, res) => {
-    try {
-        const { name, email } = req.body;
+const createUser = (req, res) => {
+  const newUser = {
+    id: users.length + 1,
+    name: req.body.name,
+    email: req.body.email,
+  };
+  users.push(newUser);
+  res.status(201).json(newUser);
+};
 
-        if (!name || !email) {
-            return res.status(400).json({ error: 'Name and email are required' });
-        }
-
-        const users = readUsers();
-
-        const newUser = {
-            id: users.length > 0 ? Math.max(...users.map(u => u.id)) + 1 : 1,
-            name,
-            email,
-        };
-
-        users.push(newUser);
-
-        writeUsers(users);
-
-        res.status(201).json(newUser);
-    } catch (error) {
-        res.status(500).json({ error: 'Failed to create user' });
-    }
-}
-
-
- const updateUser = (req, res) => {
-     try {
-        const { name, email } = req.body;
-
-        if (!name || !email) {
-            return res.status(400).json({ error: 'Name and email are required' });
-        }
-
-        const users = readUsers();
-
-        const newUser = {
-            id: users.length > 0 ? Math.max(...users.map(u => u.id)) + 1 : 1,
-            name,
-            email,
-        };
-
-        users.push(newUser);
-
-        writeUsers(users);
-
-        res.status(201).json(newUser);
-    } catch (error) {
-        res.status(500).json({ error: 'Failed to create user' });
-    }
-    res.send('Update a user by ID')
-}
+const updateUser = (req, res) => {
+  const id = Number(req.params.userID);
+  const index = users.findIndex(user => user.id === id);
+  if (index === -1) {
+    return res.status(404).send('User not found');
+  }
+  const updatedUser = {
+    id: users[index].id,
+    name: req.body.name,
+    email: req.body.email,
+  };
+  users[index] = updatedUser;
+  res.status(200).json('User updated');
+};
 
  const deleteUser = (req, res) => {
-     try {
-        const { name, email } = req.body;
+  const id = Number(req.params.userID);
+  const index = users.findIndex(user => user.id === id);
+  if (index === -1) {
+    return res.status(404).send('User not found');
+  }
+  users.splice(index, 1);
+  res.status(200).json('User deleted');
+};
 
-        if (!name || !email) {
-            return res.status(400).json({ error: 'Name and email are required' });
-        }
 
-        const users = readUsers();
-
-        const newUser = {
-            id: users.length > 0 ? Math.max(...users.map(u => u.id)) + 1 : 1,
-            name,
-            email,
-        };
-
-        users.push(newUser);
-
-        writeUsers(users);
-
-        res.status(201).json(newUser);
-    } catch (error) {
-        res.status(500).json({ error: 'Failed to create user' });
-    }
-    res.send('Delete a user by ID')
-}
-
-export { getUsers, getOneUser, createUser, updateUser, deleteUser }
+export { getAllUsers,
+         getUserById,
+         createUser,
+         updateUser,
+         deleteUser }
